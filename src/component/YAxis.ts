@@ -301,25 +301,38 @@ export default abstract class YAxisImp extends AxisImp implements YAxis {
       switch (type) {
         case YAxisType.Percentage: {
           v = `${formatPrecision(value, 2)}%`
+          v = formatFoldDecimal(
+            formatThousands(v, thousandsSeparator),
+            decimalFoldThreshold
+          )
           break
         }
         case YAxisType.Log: {
           y = this._innerConvertToPixel(log10(+value))
-          v = formatPrecision(value, precision)
+
+          v = Number(value).toLocaleString('id-ID', {
+            maximumFractionDigits: precision ?? 2,
+            minimumFractionDigits: precision ?? 2
+          })
+
+          if (shouldFormatBigNumber) {
+            v = customApi.formatBigNumber(value)
+          }
           break
         }
         default: {
-          v = formatPrecision(value, precision)
+          v = Number(value).toLocaleString('id-ID', {
+            maximumFractionDigits: precision ?? 2,
+            minimumFractionDigits: precision ?? 2
+          })
+
           if (shouldFormatBigNumber) {
             v = customApi.formatBigNumber(value)
           }
           break
         }
       }
-      v = formatFoldDecimal(
-        formatThousands(v, thousandsSeparator),
-        decimalFoldThreshold
-      )
+
       const validYNumber = isNumber(validY)
       if (
         y > textHeight &&

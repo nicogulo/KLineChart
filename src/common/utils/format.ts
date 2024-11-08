@@ -154,3 +154,10 @@ export function formatFoldDecimal (
   }
   return vl
 }
+
+export function formatLocaleString (value: string | number, precision?: number): string {
+  return (+value).toLocaleString('id-ID', {
+    minimumFractionDigits: precision ?? 2,
+    maximumFractionDigits: precision ?? 2
+  })
+}

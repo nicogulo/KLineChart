@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-import { formatPrecision, formatThousands, formatFoldDecimal } from '../common/utils/format'
+import { formatThousands, formatFoldDecimal, formatLocaleString } from '../common/utils/format'
 import { isNumber, isValid } from '../common/utils/typeChecks'
 
 import { eachFigures, type IndicatorFigure, type IndicatorFigureStyle } from '../component/Indicator'
@@ -38,6 +38,7 @@ export default class IndicatorLastValueView extends View<YAxis> {
       const indicators = chartStore.getIndicatorStore().getInstances(pane.getId())
       const thousandsSeparator = chartStore.getThousandsSeparator()
       const decimalFoldThreshold = chartStore.getDecimalFoldThreshold()
+      console.log('called here', indicators)
       indicators.forEach(indicator => {
         const result = indicator.result
         const indicatorData = result[dataIndex]
@@ -47,7 +48,7 @@ export default class IndicatorLastValueView extends View<YAxis> {
             const value = indicatorData[figure.key]
             if (isNumber(value)) {
               const y = yAxis.convertToNicePixel(value)
-              let text = formatPrecision(value, precision)
+              let text = formatLocaleString(value, precision)
               if (indicator.shouldFormatBigNumber) {
                 text = customApi.formatBigNumber(text)
               }

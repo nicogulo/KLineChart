@@ -21,7 +21,7 @@ import {
   type Styles, type CandleStyle, type TooltipLegend, type TooltipLegendChild, TooltipShowType, CandleTooltipRectPosition,
   type CandleTooltipCustomCallbackData, YAxisPosition, PolygonType
 } from '../common/Styles'
-import { formatPrecision, formatThousands, formatFoldDecimal } from '../common/utils/format'
+import { formatPrecision, formatThousands, formatFoldDecimal, formatLocaleString } from '../common/utils/format'
 import { createFont } from '../common/utils/canvas'
 import { isFunction, isObject, isValid } from '../common/utils/typeChecks'
 
@@ -439,17 +439,14 @@ export default class CandleTooltipView extends IndicatorTooltipView {
     const current = data.current
     const prevClose = data.prev?.close ?? current.close
     const changeValue = current.close - prevClose
-    const { price: pricePrecision, volume: volumePrecision } = precision
+    const { price: pricePrecision } = precision
     const mapping = {
       '{time}': customApi.formatDate(dateTimeFormat, current.timestamp, 'YYYY-MM-DD HH:mm', FormatDateType.Tooltip),
-      '{open}': formatFoldDecimal(formatThousands(formatPrecision(current.open, pricePrecision), thousandsSeparator), decimalFoldThreshold),
-      '{high}': formatFoldDecimal(formatThousands(formatPrecision(current.high, pricePrecision), thousandsSeparator), decimalFoldThreshold),
-      '{low}': formatFoldDecimal(formatThousands(formatPrecision(current.low, pricePrecision), thousandsSeparator), decimalFoldThreshold),
-      '{close}': formatFoldDecimal(formatThousands(formatPrecision(current.close, pricePrecision), thousandsSeparator), decimalFoldThreshold),
-      '{volume}': formatFoldDecimal(formatThousands(
-        customApi.formatBigNumber(formatPrecision(current.volume ?? tooltipStyles.defaultValue, volumePrecision)),
-        thousandsSeparator
-      ), decimalFoldThreshold),
+      '{open}': formatLocaleString(current.open, pricePrecision),
+      '{high}': formatLocaleString(current.high, pricePrecision),
+      '{low}': formatLocaleString(current.low, pricePrecision),
+      '{close}': formatLocaleString(current.close, pricePrecision),
+      '{volume}': customApi.formatBigNumber(current.volume ?? tooltipStyles.defaultValue),
       '{turnover}': formatFoldDecimal(formatThousands(
         formatPrecision(current.turnover ?? tooltipStyles.defaultValue, pricePrecision),
         thousandsSeparator

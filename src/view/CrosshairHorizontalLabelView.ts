@@ -16,7 +16,7 @@ import type Bounding from '../common/Bounding'
 import type Crosshair from '../common/Crosshair'
 import { type CrosshairStyle, type CrosshairDirectionStyle, YAxisType, type StateTextStyle } from '../common/Styles'
 import { isString } from '../common/utils/typeChecks'
-import { formatPrecision, formatThousands, formatFoldDecimal } from '../common/utils/format'
+import { formatLocaleString } from '../common/utils/format'
 import { createFont } from '../common/utils/canvas'
 
 import type Axis from '../component/Axis'
@@ -83,12 +83,12 @@ export default class CrosshairHorizontalLabelView<C extends Axis = YAxis> extend
           }
         })
       }
-      text = formatPrecision(value, precision)
+      text = formatLocaleString(value, precision)
       if (shouldFormatBigNumber) {
         text = chartStore.getCustomApi().formatBigNumber(text)
       }
     }
-    return formatFoldDecimal(formatThousands(text, chartStore.getThousandsSeparator()), chartStore.getDecimalFoldThreshold())
+    return text
   }
 
   protected getTextAttrs (text: string, _textWidth: number, crosshair: Crosshair, bounding: Bounding, axis: Axis, _styles: StateTextStyle): TextAttrs {

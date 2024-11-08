@@ -18,7 +18,7 @@ import type Bounding from '../common/Bounding'
 import type BarSpace from '../common/BarSpace'
 import { type OverlayStyle } from '../common/Styles'
 import { type CustomApi } from '../Options'
-import { formatPrecision, formatThousands, formatFoldDecimal } from '../common/utils/format'
+import { formatLocaleString } from '../common/utils/format'
 import { isNumber } from '../common/utils/typeChecks'
 
 import type Axis from '../component/Axis'
@@ -67,8 +67,8 @@ export default class OverlayYAxisView<C extends Axis = YAxis> extends OverlayVie
     precision: OverlayPrecision,
     _dateTimeFormat: Intl.DateTimeFormat,
     _customApi: CustomApi,
-    thousandsSeparator: string,
-    decimalFoldThreshold: number,
+    _thousandsSeparator: string,
+    _decimalFoldThreshold: number,
     _xAxis: Nullable<XAxis>,
     yAxis: Nullable<YAxis>,
     clickInstanceInfo: EventOverlayInfo
@@ -96,7 +96,7 @@ export default class OverlayYAxisView<C extends Axis = YAxis> extends OverlayVie
         if (isNumber(point.value)) {
           topY = Math.min(topY, coordinate.y)
           bottomY = Math.max(bottomY, coordinate.y)
-          const text = formatFoldDecimal(formatThousands(formatPrecision(point.value, precision.price), thousandsSeparator), decimalFoldThreshold)
+          const text = formatLocaleString(point.value, precision.price)
           figures.push({ type: 'text', attrs: { x, y: coordinate.y, text, align: textAlign, baseline: 'middle' }, ignoreEvent: true })
         }
       })

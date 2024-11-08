@@ -12,78 +12,82 @@
  * limitations under the License.
  */
 
-import type DeepPartial from './common/DeepPartial'
-import type { Styles } from './common/Styles'
+import type DeepPartial from "./common/DeepPartial";
+import type { Styles } from "./common/Styles";
 
-import type { IndicatorCreate } from './component/Indicator'
-import type { PaneOptions } from './pane/types'
+import type { IndicatorCreate } from "./component/Indicator";
+import type { PaneOptions } from "./pane/types";
 
 export enum FormatDateType {
   Tooltip,
   Crosshair,
-  XAxis
+  XAxis,
 }
 
-export type FormatDate = (timestamp: number, format: string, type: FormatDateType) => string
+export type FormatDate = (
+  timestamp: number,
+  format: string,
+  type: FormatDateType
+) => string;
 
-export type FormatBigNumber = (value: string | number) => string
+export type FormatBigNumber = (value: string | number) => string;
 
 export interface CustomApi {
-  formatDate: FormatDate
-  formatBigNumber: FormatBigNumber
+  formatDate: FormatDate;
+  formatBigNumber: FormatBigNumber;
 }
 
 export interface Locales {
-  time: string
-  open: string
-  high: string
-  low: string
-  close: string
-  volume: string
-  change: string
-  turnover: string
-  [key: string]: string
+  time: string;
+  open: string;
+  high: string;
+  low: string;
+  close: string;
+  volume: string;
+  change: string;
+  turnover: string;
+  [key: string]: string;
 }
 
 export const enum LayoutChildType {
-  Candle = 'candle',
-  Indicator = 'indicator',
-  XAxis = 'xAxis'
+  Candle = "candle",
+  Indicator = "indicator",
+  XAxis = "xAxis",
 }
 
 export interface LayoutChild {
-  type: LayoutChildType
-  content?: Array<string | IndicatorCreate>
-  options?: PaneOptions
+  type: LayoutChildType;
+  content?: Array<string | IndicatorCreate>;
+  options?: PaneOptions;
 }
 
-
 export const enum DecimalFoldType {
-  CurlyBracket = 'curlyBracket',
-  Subscript = 'subscript'
+  CurlyBracket = "curlyBracket",
+  Subscript = "subscript",
 }
 
 export interface DecimalFold {
-  type: DecimalFoldType
-  threshold: number
-  format: (value: string | number) => string
+  type: DecimalFoldType;
+  threshold: number;
+  format: (value: string | number) => string;
 }
 
 export interface ThousandsSeparator {
-  sign: string
-  format: (value: string | number) => string
+  sign: string;
+  format: (value: string | number) => string;
 }
 
 export interface Options {
-  locale: string
-  timezone: string
-  styles: Styles
-  customApi: CustomApi
-  thousandsSeparator: ThousandsSeparator
-  decimalFold: DecimalFold
+  locale: string;
+  timezone: string;
+  styles: Styles;
+  customApi: CustomApi;
+  thousandsSeparator: ThousandsSeparator;
+  candleShouldFormatBigNumber?: boolean;
+  decimalFold: DecimalFold;
 }
 
-export type OverrideOptions = DeepPartial<Omit<Options, 'styles'>> & {
-  layout?: LayoutChild[]
-  styles?: string | DeepPartial<Styles>
-}
+export type OverrideOptions = DeepPartial<Omit<Options, "styles">> & {
+  layout?: LayoutChild[];
+  styles?: string | DeepPartial<Styles>;
+};

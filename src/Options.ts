@@ -22,10 +22,15 @@ import { type PaneOptions } from './pane/types'
 export enum FormatDateType {
   Tooltip,
   Crosshair,
-  XAxis
+  XAxis,
 }
 
-export type FormatDate = (dateTimeFormat: Intl.DateTimeFormat, timestamp: number, format: string, type: FormatDateType) => string
+export type FormatDate = (
+  dateTimeFormat: Intl.DateTimeFormat,
+  timestamp: number,
+  format: string,
+  type: FormatDateType
+) => string
 
 export type FormatBigNumber = (value: string | number) => string
 
@@ -58,7 +63,7 @@ export interface Locales {
 export const enum LayoutChildType {
   Candle = 'candle',
   Indicator = 'indicator',
-  XAxis = 'xAxis'
+  XAxis = 'xAxis',
 }
 
 export interface LayoutChild {
@@ -74,5 +79,6 @@ export interface Options {
   styles?: string | DeepPartial<Styles>
   customApi?: Partial<CustomApi>
   thousandsSeparator?: string
+  candleShouldFormatBigNumber?: boolean
   decimalFoldThreshold?: number
 }

@@ -17,9 +17,19 @@ import type Bounding from '../common/Bounding'
 import { isNumber, isValid } from '../common/utils/typeChecks'
 import { index10, log10 } from '../common/utils/number'
 import { calcTextWidth } from '../common/utils/canvas'
-import { formatPrecision, formatThousands, formatFoldDecimal } from '../common/utils/format'
+import {
+  formatPrecision,
+  formatThousands,
+  formatFoldDecimal
+} from '../common/utils/format'
 
-import AxisImp, { type AxisTemplate, type Axis, type AxisRange, type AxisTick, type AxisCreateTicksParams } from './Axis'
+import AxisImp, {
+  type AxisTemplate,
+  type Axis,
+  type AxisRange,
+  type AxisTick,
+  type AxisCreateTicksParams
+} from './Axis'
 
 import { type IndicatorFigure } from './Indicator'
 
@@ -51,8 +61,10 @@ export default abstract class YAxisImp extends AxisImp implements YAxis {
     let specifyMin = Number.MAX_SAFE_INTEGER
     let specifyMax = Number.MIN_SAFE_INTEGER
     let indicatorPrecision = Number.MAX_SAFE_INTEGER
-    const indicators = chartStore.getIndicatorStore().getInstances(parent.getId())
-    indicators.forEach(indicator => {
+    const indicators = chartStore
+      .getIndicatorStore()
+      .getInstances(parent.getId())
+    indicators.forEach((indicator) => {
       if (!shouldOhlc) {
         shouldOhlc = indicator.shouldOhlc ?? false
       }
@@ -87,7 +99,8 @@ export default abstract class YAxisImp extends AxisImp implements YAxis {
     const candleStyles = chart.getStyles().candle
     const isArea = candleStyles.type === CandleType.Area
     const areaValueKey = candleStyles.area.value
-    const shouldCompareHighLow = (inCandle && !isArea) || (!inCandle && shouldOhlc)
+    const shouldCompareHighLow =
+      (inCandle && !isArea) || (!inCandle && shouldOhlc)
     visibleDataList.forEach(({ dataIndex, data }) => {
       if (isValid(data)) {
         if (shouldCompareHighLow) {
@@ -104,7 +117,7 @@ export default abstract class YAxisImp extends AxisImp implements YAxis {
       }
       figuresResultList.forEach(({ figures, result }) => {
         const indicatorData = result[dataIndex] ?? {}
-        figures.forEach(figure => {
+        figures.forEach((figure) => {
           const value = indicatorData[figure.key]
           if (isNumber(value)) {
             min = Math.min(min, value)
@@ -128,8 +141,8 @@ export default abstract class YAxisImp extends AxisImp implements YAxis {
       case YAxisType.Percentage: {
         const fromData = chartStore.getVisibleFirstData()
         if (isValid(fromData) && isNumber(fromData.close)) {
-          min = (min - fromData.close) / fromData.close * 100
-          max = (max - fromData.close) / fromData.close * 100
+          min = ((min - fromData.close) / fromData.close) * 100
+          max = ((max - fromData.close) / fromData.close) * 100
         }
         dif = Math.pow(10, -2)
         break
@@ -144,14 +157,11 @@ export default abstract class YAxisImp extends AxisImp implements YAxis {
         dif = index10(-precision)
       }
     }
-    if (
-      min === max ||
-      Math.abs(min - max) < dif
-    ) {
+    if (min === max || Math.abs(min - max) < dif) {
       const minCheck = specifyMin === min
       const maxCheck = specifyMax === max
-      min = minCheck ? min : (maxCheck ? min - 8 * dif : min - 4 * dif)
-      max = maxCheck ? max : (minCheck ? max + 8 * dif : max + 4 * dif)
+      min = minCheck ? min : maxCheck ? min - 8 * dif : min - 4 * dif
+      max = maxCheck ? max : minCheck ? max + 8 * dif : max + 4 * dif
     }
 
     const height = this.getParent().getYAxisWidget()?.getBounding().height ?? 0
@@ -183,7 +193,12 @@ export default abstract class YAxisImp extends AxisImp implements YAxis {
     }
 
     return {
-      from: min, to: max, range, realFrom: realMin, realTo: realMax, realRange
+      from: min,
+      to: max,
+      range,
+      realFrom: realMin,
+      realTo: realMax,
+      realRange
     }
   }
 
@@ -197,7 +212,9 @@ export default abstract class YAxisImp extends AxisImp implements YAxis {
     const height = this.getParent().getYAxisWidget()?.getBounding().height ?? 0
     const { from, range } = this.getRange()
     const rate = (value - from) / range
-    return this.isReverse() ? Math.round(rate * height) : Math.round((1 - rate) * height)
+    return this.isReverse()
+      ? Math.round(rate * height)
+      : Math.round((1 - rate) * height)
   }
 
   /**
@@ -254,15 +271,22 @@ export default abstract class YAxisImp extends AxisImp implements YAxis {
     const customApi = chartStore.getCustomApi()
     const optimalTicks: AxisTick[] = []
     const type = this.getType()
-    const indicators = chartStore.getIndicatorStore().getInstances(pane.getId())
+    const indicators = chartStore
+      .getIndicatorStore()
+      .getInstances(pane.getId())
     const thousandsSeparator = chartStore.getThousandsSeparator()
+    const candleShouldFormatBigNumber =
+      chartStore.getCandleShouldFormatBigNumber()
     const decimalFoldThreshold = chartStore.getDecimalFoldThreshold()
     let precision = 0
     let shouldFormatBigNumber = false
     if (this.isInCandle()) {
+      if (typeof candleShouldFormatBigNumber !== 'undefined') {
+        shouldFormatBigNumber = candleShouldFormatBigNumber
+      }
       precision = chartStore.getPrecision().price
     } else {
-      indicators.forEach(tech => {
+      indicators.forEach((tech) => {
         precision = Math.max(precision, tech.precision)
         if (!shouldFormatBigNumber) {
           shouldFormatBigNumber = tech.shouldFormatBigNumber
@@ -292,12 +316,17 @@ export default abstract class YAxisImp extends AxisImp implements YAxis {
           break
         }
       }
-      v = formatFoldDecimal(formatThousands(v, thousandsSeparator), decimalFoldThreshold)
+      v = formatFoldDecimal(
+        formatThousands(v, thousandsSeparator),
+        decimalFoldThreshold
+      )
       const validYNumber = isNumber(validY)
       if (
         y > textHeight &&
         y < height - textHeight &&
-        ((validYNumber && (Math.abs(validY - y) > textHeight * 2)) || !validYNumber)) {
+        ((validYNumber && Math.abs(validY - y) > textHeight * 2) ||
+          !validYNumber)
+      ) {
         optimalTicks.push({ text: v, coord: y, value })
         validY = y
       }
@@ -326,10 +355,21 @@ export default abstract class YAxisImp extends AxisImp implements YAxis {
       }
       if (yAxisStyles.tickText.show) {
         let textWidth = 0
-        this.getTicks().forEach(tick => {
-          textWidth = Math.max(textWidth, calcTextWidth(tick.text, yAxisStyles.tickText.size, yAxisStyles.tickText.weight, yAxisStyles.tickText.family))
+        this.getTicks().forEach((tick) => {
+          textWidth = Math.max(
+            textWidth,
+            calcTextWidth(
+              tick.text,
+              yAxisStyles.tickText.size,
+              yAxisStyles.tickText.weight,
+              yAxisStyles.tickText.family
+            )
+          )
         })
-        yAxisWidth += (yAxisStyles.tickText.marginStart + yAxisStyles.tickText.marginEnd + textWidth)
+        yAxisWidth +=
+          yAxisStyles.tickText.marginStart +
+          yAxisStyles.tickText.marginEnd +
+          textWidth
       }
     }
     const crosshairStyles = styles.crosshair
@@ -339,10 +379,12 @@ export default abstract class YAxisImp extends AxisImp implements YAxis {
       crosshairStyles.horizontal.show &&
       crosshairStyles.horizontal.text.show
     ) {
-      const indicators = chartStore.getIndicatorStore().getInstances(pane.getId())
+      const indicators = chartStore
+        .getIndicatorStore()
+        .getInstances(pane.getId())
       let techPrecision = 0
       let shouldFormatBigNumber = false
-      indicators.forEach(tech => {
+      indicators.forEach((tech) => {
         techPrecision = Math.max(tech.precision, techPrecision)
         if (!shouldFormatBigNumber) {
           shouldFormatBigNumber = tech.shouldFormatBigNumber
@@ -366,8 +408,11 @@ export default abstract class YAxisImp extends AxisImp implements YAxis {
       if (shouldFormatBigNumber) {
         valueText = customApi.formatBigNumber(valueText)
       }
-      valueText = formatFoldDecimal(valueText, chartStore.getDecimalFoldThreshold())
-      crosshairVerticalTextWidth += (
+      valueText = formatFoldDecimal(
+        valueText,
+        chartStore.getDecimalFoldThreshold()
+      )
+      crosshairVerticalTextWidth +=
         crosshairStyles.horizontal.text.paddingLeft +
         crosshairStyles.horizontal.text.paddingRight +
         crosshairStyles.horizontal.text.borderSize * 2 +
@@ -377,7 +422,6 @@ export default abstract class YAxisImp extends AxisImp implements YAxis {
           crosshairStyles.horizontal.text.weight,
           crosshairStyles.horizontal.text.family
         )
-      )
     }
     return Math.max(yAxisWidth, crosshairVerticalTextWidth)
   }
@@ -393,9 +437,12 @@ export default abstract class YAxisImp extends AxisImp implements YAxis {
     const value = rate * range + from
     switch (this.getType()) {
       case YAxisType.Percentage: {
-        const fromData = this.getParent().getChart().getChartStore().getVisibleFirstData()
+        const fromData = this.getParent()
+          .getChart()
+          .getChartStore()
+          .getVisibleFirstData()
         if (isValid(fromData) && isNumber(fromData.close)) {
-          return fromData.close * value / 100 + fromData.close
+          return (fromData.close * value) / 100 + fromData.close
         }
         return 0
       }
@@ -420,9 +467,12 @@ export default abstract class YAxisImp extends AxisImp implements YAxis {
     let v = value
     switch (this.getType()) {
       case YAxisType.Percentage: {
-        const fromData = this.getParent().getChart().getChartStore().getVisibleFirstData()
+        const fromData = this.getParent()
+          .getChart()
+          .getChartStore()
+          .getVisibleFirstData()
         if (isValid(fromData) && isNumber(fromData.close)) {
-          v = (value - fromData.close) / fromData.close * 100
+          v = ((value - fromData.close) / fromData.close) * 100
         }
         break
       }

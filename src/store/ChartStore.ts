@@ -17,15 +17,31 @@ import type KLineData from '../common/KLineData'
 import type Precision from '../common/Precision'
 import type VisibleData from '../common/VisibleData'
 import type DeepPartial from '../common/DeepPartial'
-import { getDefaultStyles, type Styles, type TooltipLegend } from '../common/Styles'
-import { isArray, isNumber, isString, isValid, merge } from '../common/utils/typeChecks'
+import {
+  getDefaultStyles,
+  type Styles,
+  type TooltipLegend
+} from '../common/Styles'
+import {
+  isArray,
+  isBoolean,
+  isNumber,
+  isString,
+  isValid,
+  merge
+} from '../common/utils/typeChecks'
 import { formatValue } from '../common/utils/format'
 import type LoadDataCallback from '../common/LoadDataCallback'
 import { type LoadDataParams, LoadDataType } from '../common/LoadDataCallback'
 import type LoadMoreCallback from '../common/LoadMoreCallback'
 import { ActionType } from '../common/Action'
 
-import { getDefaultCustomApi, type CustomApi, defaultLocale, type Options } from '../Options'
+import {
+  getDefaultCustomApi,
+  type CustomApi,
+  defaultLocale,
+  type Options
+} from '../Options'
 
 import TimeScaleStore from './TimeScaleStore'
 import IndicatorStore from './IndicatorStore'
@@ -67,6 +83,12 @@ export default class ChartStore {
    * Thousands separator
    */
   private _thousandsSeparator = ','
+
+  /**
+   * candleShouldFormatBigNumber
+   */
+
+  private _candleShouldFormatBigNumber = false
 
   // Decimal fold threshold
   private _decimalFoldThreshold = 3
@@ -158,7 +180,15 @@ export default class ChartStore {
 
   setOptions (options?: Options): this {
     if (isValid(options)) {
-      const { locale, timezone, styles, customApi, thousandsSeparator, decimalFoldThreshold } = options
+      const {
+        locale,
+        timezone,
+        styles,
+        customApi,
+        thousandsSeparator,
+        decimalFoldThreshold,
+        candleShouldFormatBigNumber
+      } = options
       if (isString(locale)) {
         this._locale = locale
       }
@@ -175,7 +205,8 @@ export default class ChartStore {
         merge(this._styles, ss)
         // `candle.tooltip.custom` should override
         if (isArray(ss?.candle?.tooltip?.custom)) {
-          this._styles.candle.tooltip.custom = ss?.candle?.tooltip?.custom as unknown as TooltipLegend[]
+          this._styles.candle.tooltip.custom = ss?.candle?.tooltip
+            ?.custom as unknown as TooltipLegend[]
         }
       }
       if (isValid(customApi)) {
@@ -183,6 +214,9 @@ export default class ChartStore {
       }
       if (isString(thousandsSeparator)) {
         this._thousandsSeparator = thousandsSeparator
+      }
+      if (isBoolean(candleShouldFormatBigNumber)) {
+        this._candleShouldFormatBigNumber = candleShouldFormatBigNumber
       }
       if (isNumber(decimalFoldThreshold) && decimalFoldThreshold > 0) {
         this._decimalFoldThreshold = decimalFoldThreshold
@@ -205,6 +239,10 @@ export default class ChartStore {
 
   getThousandsSeparator (): string {
     return this._thousandsSeparator
+  }
+
+  getCandleShouldFormatBigNumber (): boolean {
+    return this._candleShouldFormatBigNumber
   }
 
   getDecimalFoldThreshold (): number {
@@ -234,7 +272,11 @@ export default class ChartStore {
     return this._visibleDataList
   }
 
-  async addData (data: KLineData | KLineData[], type?: LoadDataType, more?: boolean): Promise<void> {
+  async addData (
+    data: KLineData | KLineData[],
+    type?: LoadDataType,
+    more?: boolean
+  ): Promise<void> {
     let success = false
     let adjustFlag = false
     let dataLengthChange = 0
@@ -267,12 +309,19 @@ export default class ChartStore {
       const dataCount = this._dataList.length
       // Determine where individual data should be added
       const timestamp = data.timestamp
-      const lastDataTimestamp = formatValue(this._dataList[dataCount - 1], 'timestamp', 0) as number
+      const lastDataTimestamp = formatValue(
+        this._dataList[dataCount - 1],
+        'timestamp',
+        0
+      ) as number
       if (timestamp > lastDataTimestamp) {
         this._dataList.push(data)
-        let lastBarRightSideDiffBarCount = this._timeScaleStore.getLastBarRightSideDiffBarCount()
+        let lastBarRightSideDiffBarCount =
+          this._timeScaleStore.getLastBarRightSideDiffBarCount()
         if (lastBarRightSideDiffBarCount < 0) {
-          this._timeScaleStore.setLastBarRightSideDiffBarCount(--lastBarRightSideDiffBarCount)
+          this._timeScaleStore.setLastBarRightSideDiffBarCount(
+            --lastBarRightSideDiffBarCount
+          )
         }
         dataLengthChange = 1
         success = true
@@ -302,7 +351,11 @@ export default class ChartStore {
   }
 
   executeLoadMoreCallback (timestamp: Nullable<number>): void {
-    if (this._forwardMore && !this._loading && isValid(this._loadMoreCallback)) {
+    if (
+      this._forwardMore &&
+      !this._loading &&
+      isValid(this._loadMoreCallback)
+    ) {
       this._loading = true
       this._loadMoreCallback(timestamp)
     }
@@ -316,13 +369,16 @@ export default class ChartStore {
     if (
       !this._loading &&
       isValid(this._loadDataCallback) &&
-      (
-        (this._forwardMore && params.type === LoadDataType.Forward) ||
-        (this._backwardMore && params.type === LoadDataType.Backward)
-      )
+      ((this._forwardMore && params.type === LoadDataType.Forward) ||
+        (this._backwardMore && params.type === LoadDataType.Backward))
     ) {
-      const cb: ((data: KLineData[], more?: boolean) => void) = (data: KLineData[], more?: boolean) => {
-        this.addData(data, params.type, more).then(() => {}).catch(() => {})
+      const cb: (data: KLineData[], more?: boolean) => void = (
+        data: KLineData[],
+        more?: boolean
+      ) => {
+        this.addData(data, params.type, more)
+          .then(() => {})
+          .catch(() => {})
       }
       this._loading = true
       this._loadDataCallback({ ...params, callback: cb })

@@ -12,165 +12,200 @@
  * limitations under the License.
  */
 
-import { isNumber, isValid } from './typeChecks'
+import { isNumber, isValid } from "./typeChecks";
 
 export interface DateTime {
-  YYYY: string
-  MM: string
-  DD: string
-  HH: string
-  mm: string
-  ss: string
+  YYYY: string;
+  MM: string;
+  DD: string;
+  HH: string;
+  mm: string;
+  ss: string;
 }
 
-const reEscapeChar = /\\(\\)?/g
+const reEscapeChar = /\\(\\)?/g;
 const rePropName = RegExp(
-  '[^.[\\]]+' + '|' +
-  '\\[(?:' +
-    '([^"\'][^[]*)' + '|' +
-    '(["\'])((?:(?!\\2)[^\\\\]|\\\\.)*?)\\2' +
-  ')\\]' + '|' +
-  '(?=(?:\\.|\\[\\])(?:\\.|\\[\\]|$))'
-  , 'g')
+  "[^.[\\]]+" +
+    "|" +
+    "\\[(?:" +
+    "([^\"'][^[]*)" +
+    "|" +
+    "([\"'])((?:(?!\\2)[^\\\\]|\\\\.)*?)\\2" +
+    ")\\]" +
+    "|" +
+    "(?=(?:\\.|\\[\\])(?:\\.|\\[\\]|$))",
+  "g"
+);
 
-export function formatValue (data: unknown, key: string, defaultValue?: unknown): unknown {
+export function formatValue(
+  data: unknown,
+  key: string,
+  defaultValue?: unknown
+): unknown {
   if (isValid(data)) {
-    const path: string[] = []
+    const path: string[] = [];
     key.replace(rePropName, (subString: string, ...args: unknown[]) => {
-      let k = subString
+      let k = subString;
       if (isValid(args[1])) {
-        k = (args[2] as string).replace(reEscapeChar, '$1')
+        k = (args[2] as string).replace(reEscapeChar, "$1");
       } else if (isValid(args[0])) {
-        k = (args[0] as string).trim()
+        k = (args[0] as string).trim();
       }
-      path.push(k)
-      return ''
-    })
-    let value = data
-    let index = 0
-    const length = path.length
+      path.push(k);
+      return "";
+    });
+    let value = data;
+    let index = 0;
+    const length = path.length;
     while (isValid(value) && index < length) {
-      value = value?.[path[index++]]
+      value = value?.[path[index++]];
     }
-    return isValid(value) ? value : (defaultValue ?? '--')
+    return isValid(value) ? value : defaultValue ?? "--";
   }
-  return defaultValue ?? '--'
+  return defaultValue ?? "--";
 }
 
-export function formatDateToDateTime (dateTimeFormat: Intl.DateTimeFormat, timestamp: number): DateTime {
-  const date: Record<string, string> = {}
-  dateTimeFormat.formatToParts(new Date(timestamp)).forEach(({ type, value }) => {
-    switch (type) {
-      case 'year': {
-        date.YYYY = value
-        break
+export function formatDateToDateTime(
+  dateTimeFormat: Intl.DateTimeFormat,
+  timestamp: number
+): DateTime {
+  const date: Record<string, string> = {};
+  dateTimeFormat
+    .formatToParts(new Date(timestamp))
+    .forEach(({ type, value }) => {
+      switch (type) {
+        case "year": {
+          date.YYYY = value;
+          break;
+        }
+        case "month": {
+          date.MM = value;
+          break;
+        }
+        case "day": {
+          date.DD = value;
+          break;
+        }
+        case "hour": {
+          date.HH = value === "24" ? "00" : value;
+          break;
+        }
+        case "minute": {
+          date.mm = value;
+          break;
+        }
+        case "second": {
+          date.ss = value;
+          break;
+        }
       }
-      case 'month': {
-        date.MM = value
-        break
-      }
-      case 'day': {
-        date.DD = value
-        break
-      }
-      case 'hour': {
-        date.HH = value === '24' ? '00' : value
-        break
-      }
-      case 'minute': {
-        date.mm = value
-        break
-      }
-      case 'second': {
-        date.ss = value
-        break
-      }
-    }
-  })
-  return date as unknown as DateTime
+    });
+  return date as unknown as DateTime;
 }
 
-export function formatDateToString (dateTimeFormat: Intl.DateTimeFormat, timestamp: number, format: string): string {
-  const date = formatDateToDateTime(dateTimeFormat, timestamp)
+export function formatDateToString(
+  dateTimeFormat: Intl.DateTimeFormat,
+  timestamp: number,
+  format: string
+): string {
+  const date = formatDateToDateTime(dateTimeFormat, timestamp);
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return format.replace(/YYYY|MM|DD|HH|mm|ss/g, key => date[key])
+  return format.replace(/YYYY|MM|DD|HH|mm|ss/g, (key) => date[key]);
 }
 
-export function formatPrecision (value: string | number, precision?: number): string {
-  const v = +value
+export function formatPrecision(
+  value: string | number,
+  precision?: number
+): string {
+  const v = +value;
   if (isNumber(v)) {
-    return v.toFixed(precision ?? 2)
+    return v.toLocaleString("id-ID", {
+      minimumFractionDigits: precision ?? 2,
+      maximumFractionDigits: precision ?? 2,
+    });
   }
-  return `${value}`
+  return `${value}`;
 }
 
-export function formatBigNumber (value: string | number): string {
-  const v = +value
+export function formatBigNumber(value: string | number): string {
+  const v = +value;
   if (isNumber(v)) {
     if (v > 1000000000) {
-      return `${+((v / 1000000000).toFixed(3))}B`
+      return `${+(v / 1000000000).toFixed(3)}B`;
     }
     if (v > 1000000) {
-      return `${+((v / 1000000).toFixed(3))}M`
+      return `${+(v / 1000000).toFixed(3)}M`;
     }
     if (v > 1000) {
-      return `${+((v / 1000).toFixed(3))}K`
+      return `${+(v / 1000).toFixed(3)}K`;
     }
   }
-  return `${value}`
+  return `${value}`;
 }
 
-export function formatThousands (value: string | number, sign: string): string {
-  const vl = `${value}`
+export function formatThousands(value: string | number, sign: string): string {
+  const vl = `${value}`;
   if (sign.length === 0) {
-    return vl
+    return vl;
   }
-  if (vl.includes('.')) {
-    const arr = vl.split('.')
-    return `${arr[0].replace(/(\d)(?=(\d{3})+$)/g, $1 => `${$1}${sign}`)}.${arr[1]}`
+  if (vl.includes(".")) {
+    const arr = vl.split(".");
+    return `${arr[0].replace(/(\d)(?=(\d{3})+$)/g, ($1) => `${$1}${sign}`)}.${
+      arr[1]
+    }`;
   }
-  return vl.replace(/(\d)(?=(\d{3})+$)/g, $1 => `${$1}${sign}`)
+  return vl.replace(/(\d)(?=(\d{3})+$)/g, ($1) => `${$1}${sign}`);
 }
 
-export function formatFoldDecimal (value: string | number, threshold: number, format: (count: number) => string): string {
-  const vl = `${value}`
-  const reg = new RegExp('\\.0{' + threshold + ',}[1-9][0-9]*$')
+export function formatFoldDecimal(
+  value: string | number,
+  threshold: number,
+  format: (count: number) => string
+): string {
+  const vl = `${value}`;
+  const reg = new RegExp("\\.0{" + threshold + ",}[1-9][0-9]*$");
   if (reg.test(vl)) {
-    const result = vl.split('.')
-    const lastIndex = result.length - 1
-    const v = result[lastIndex]
-    const match = v.match(/0*/)
+    const result = vl.split(".");
+    const lastIndex = result.length - 1;
+    const v = result[lastIndex];
+    const match = v.match(/0*/);
     if (isValid(match)) {
-      const count = match[0].length
-      result[lastIndex] = v.replace(/0*/, `0${format(count)}`)
-      return result.join('.')
+      const count = match[0].length;
+      result[lastIndex] = v.replace(/0*/, `0${format(count)}`);
+      return result.join(".");
     }
   }
-  return vl
+  return vl;
 }
 
-export function formatFoldDecimalForCurlyBracket (value: string | number, threshold: number): string {
-  return formatFoldDecimal(value, threshold, count => `{${count}}`)
+export function formatFoldDecimalForCurlyBracket(
+  value: string | number,
+  threshold: number
+): string {
+  return formatFoldDecimal(value, threshold, (count) => `{${count}}`);
 }
 
 const subscriptNumbers = {
-  '0': '₀',
-  '1': '₁',
-  '2': '₂',
-  '3': '₃',
-  '4': '₄',
-  '5': '₅',
-  '6': '₆',
-  '7': '₇',
-  '8': '₈',
-  '9': '₉'
-}
+  "0": "₀",
+  "1": "₁",
+  "2": "₂",
+  "3": "₃",
+  "4": "₄",
+  "5": "₅",
+  "6": "₆",
+  "7": "₇",
+  "8": "₈",
+  "9": "₉",
+};
 
-export function formatFoldDecimalForSubscript (value: string | number, threshold: number): string {
-  return formatFoldDecimal(value, threshold, count => {
-    return `${count}`.replace(/\d/, $1 => {
+export function formatFoldDecimalForSubscript(
+  value: string | number,
+  threshold: number
+): string {
+  return formatFoldDecimal(value, threshold, (count) => {
+    return `${count}`.replace(/\d/, ($1) => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      return subscriptNumbers[$1] ?? ''
-    })
-  })
+      return subscriptNumbers[$1] ?? "";
+    });
+  });
 }

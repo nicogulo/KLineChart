@@ -101,10 +101,7 @@ export function formatPrecision (
 ): string {
   const v = +value
   if (isNumber(v)) {
-    return v.toLocaleString('id-ID', {
-      maximumFractionDigits: precision ?? 2,
-      minimumFractionDigits: precision ?? 2
-    })
+    return v.toFixed(precision ?? 2)
   }
   return `${value}`
 }

@@ -316,7 +316,7 @@ export default abstract class YAxisImp extends AxisImp implements YAxis {
           })
 
           if (shouldFormatBigNumber) {
-            v = customApi.formatBigNumber(value)
+            v = customApi.formatBigNumber(value).replace('.', ',')
           }
           break
         }
@@ -327,7 +327,7 @@ export default abstract class YAxisImp extends AxisImp implements YAxis {
           })
 
           if (shouldFormatBigNumber) {
-            v = customApi.formatBigNumber(value)
+            v = customApi.formatBigNumber(value).replace('.', ',')
           }
           break
         }

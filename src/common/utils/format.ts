@@ -138,24 +138,17 @@ export function formatThousands (value: string | number, sign: string): string {
 
 export function formatFoldDecimal (
   value: string | number,
-  threshold: number
+  _threshold: number
 ): string {
   const vl = `${value}`
-  const reg = new RegExp('\\.0{' + threshold + ',}[1-9][0-9]*$')
-  if (reg.test(vl)) {
-    const result = vl.split('.')
-    const v = result[result.length - 1]
-    const match = v.match(/0*/)
-    if (isValid(match)) {
-      const count = match[0].length
-      result[result.length - 1] = v.replace(/0*/, `0{${count}}`)
-      return result.join('.')
-    }
-  }
+
   return vl
 }
 
-export function formatLocaleString (value: string | number, precision?: number): string {
+export function formatLocaleString (
+  value: string | number,
+  precision?: number
+): string {
   return (+value).toLocaleString('id-ID', {
     minimumFractionDigits: precision ?? 2,
     maximumFractionDigits: precision ?? 2
